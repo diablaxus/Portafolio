@@ -6,7 +6,7 @@ services:
     plan: free
     buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -36,6 +36,5 @@ services:
 databases:
   - name: portafolio-db
     databaseName: portafolio_db
-    user: postgres
     plan: free
     ipAllowList: []
