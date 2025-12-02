@@ -1,8 +1,15 @@
 // ==========================================
-// FUNCIONES JAVASCRIPT DEL FRONTEND
+// CONFIGURACIÓN DE LA API
 // ==========================================
 
-const API_URL = 'http://localhost:3000/api';
+// Detectar entorno automáticamente
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'
+    : '/api';
+
+console.log('🌍 Entorno:', window.location.hostname === 'localhost' ? 'Desarrollo' : 'Producción');
+console.log('🔗 API URL:', window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : window.location.origin + '/api');
+
 
 // ==========================================
 // FUNCIÓN: Cargar perfil desde la API
