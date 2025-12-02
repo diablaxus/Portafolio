@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: portafolio-frank-berrio
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_HOST
+        fromDatabase:
+          name: portafolio-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: portafolio-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: portafolio-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: portafolio-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: portafolio-db
+          property: database
+
+databases:
+  - name: portafolio-db
+    databaseName: portafolio_db
+    user: postgres
+    plan: free
+    ipAllowList: []

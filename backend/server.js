@@ -1,63 +1,62 @@
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const pool = require('./config/database');
 const apiRoutes = require('./routes/api');
+const pool = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
+// CORS - Permitir todos los orígenes en producción
 app.use(cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// Rutas de la API
+// API Routes
 app.use('/api', apiRoutes);
 
-// Ruta principal - servir el index.html
+// Ruta principal - Servir index.html
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
-// Manejo de rutas no encontradas
-app.use((req, res) => {
-    res.status(404).json({ error: 'Ruta no encontrada' });
+// Health check para Render
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
 });
 
+// Verificar conexión a la base de datos
+pool.query('SELECT NOW()')
+    .then(() => {
+        console.log('✅ Conectado a la base de datos PostgreSQL');
+        console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
+    })
+    .catch(err => console.error('❌ Error conectando a PostgreSQL:', err));
+
 // Iniciar servidor
-app.listen(PORT, () => {
-    console.log('='.repeat(50));
-    console.log('🚀 SERVIDOR INICIADO CORRECTAMENTE');
-    console.log('='.repeat(50));
-    console.log(`📄 Frontend: http://localhost:${PORT}`);
-    console.log(`🔌 API: http://localhost:${PORT}/api`);
-    console.log(`📁 Archivos estáticos: ../frontend`);
-    console.log('='.repeat(50));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`
+==================================================
+🚀 SERVIDOR INICIADO CORRECTAMENTE
+==================================================
+📄 Frontend: http://localhost:${PORT}
+🔌 API: http://localhost:${PORT}/api
+📁 Archivos estáticos: ../frontend
+🌍 Entorno: ${process.env.NODE_ENV || 'development'}
+==================================================
+    `);
 });
 
 // Manejo de cierre limpio
-process.on('SIGINT', async () => {
-    console.log('\n\n⏹️  Cerrando servidor...');
-    try {
-        await pool.end();
-        console.log('✅ Pool de conexiones cerrado');
+process.on('SIGTERM', () => {
+    console.log('👋 SIGTERM recibido. Cerrando servidor...');
+    pool.end(() => {
+        console.log('💾 Pool de PostgreSQL cerrado');
         process.exit(0);
-    } catch (err) {
-        console.error('❌ Error cerrando el pool:', err);
-        process.exit(1);
-    }
-});
-
-// Manejo de errores no capturados
-process.on('uncaughtException', (err) => {
-    console.error('❌ Error no capturado:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('❌ Promesa rechazada no manejada:', reason);
+    });
 });

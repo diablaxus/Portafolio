@@ -21,6 +21,18 @@ Portafolio personal profesional con arquitectura Frontend-Backend separada.
 
 ---
 
+## 🌐 Deploy en Render
+
+Este proyecto está configurado para desplegarse en **Render** con:
+- ✅ Backend + Frontend en un solo servicio
+- ✅ PostgreSQL incluido (gratis)
+- ✅ Deploy automático desde GitHub
+
+### URL en Producción
+🌍 **https://portafolio-frank-berrio.onrender.com**
+
+---
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -30,36 +42,40 @@ Hoja de Vida/
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
-│   ├── img/
-│   └── package.json       # Dependencias frontend (opcional)
+│   └── img/
 │
 ├── backend/               # ⚙️ Backend (Node.js/Express)
 │   ├── server.js
 │   ├── database.sql
-│   ├── package.json       # Dependencias backend
-│   ├── node_modules/
+│   ├── package.json
+│   ├── .env              # Variables locales
 │   ├── config/
 │   │   └── database.js
 │   └── routes/
 │       └── api.js
 │
-├── .env                   # Variables de entorno
-├── .env.example
+├── render.yaml           # 🚀 Configuración de Render
 ├── .gitignore
 └── README.md
 ```
 
 ---
 
-## 🔧 Instalación
+## 🔧 Instalación Local
 
-### 1. Instalar Dependencias del Backend
+### 1. Clonar Repositorio
+```powershell
+git clone https://github.com/TU_USUARIO/portafolio.git
+cd portafolio
+```
+
+### 2. Instalar Dependencias
 ```powershell
 cd backend
 npm install
 ```
 
-### 2. Configurar PostgreSQL
+### 3. Configurar PostgreSQL
 ```powershell
 # Crear base de datos
 psql -U postgres -c "CREATE DATABASE portafolio_db;"
@@ -68,8 +84,8 @@ psql -U postgres -c "CREATE DATABASE portafolio_db;"
 psql -U postgres -d portafolio_db -f database.sql
 ```
 
-### 3. Configurar Variables de Entorno
-Crea un archivo `.env` en la **carpeta backend/** con:
+### 4. Configurar Variables de Entorno
+Crea `backend/.env`:
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -77,25 +93,56 @@ DB_USER=postgres
 DB_PASSWORD=tu_contraseña
 DB_NAME=portafolio_db
 PORT=3000
+NODE_ENV=development
 ```
+
+### 5. Ejecutar
+```powershell
+npm start         # Producción
+npm run dev       # Desarrollo (auto-reload)
+```
+
+Abre: **http://localhost:3000**
 
 ---
 
-## 🚀 Ejecución
+## 🚀 Deploy en Render
 
-### Modo Producción
+### Opción A: Desde GitHub (Automático)
+
+1. **Sube tu código a GitHub**
 ```powershell
-cd backend
-npm start
+git add .
+git commit -m "Deploy inicial"
+git push origin main
 ```
 
-### Modo Desarrollo (con auto-reload)
-```powershell
-cd backend
-npm run dev
-```
+2. **Conecta en Render**
+   - Ve a https://render.com
+   - Click "New +" → "Blueprint"
+   - Conecta tu repositorio
+   - Render detecta `render.yaml` automáticamente
+   - Click "Apply"
 
-El servidor inicia en: **http://localhost:3000**
+3. **Ejecutar SQL**
+   - Ve a tu base de datos en Render
+   - Click "Connect" → "PSQL Command"
+   - Ejecuta: `\i backend/database.sql`
+
+### Opción B: Manual
+
+1. **Crear PostgreSQL**
+   - New + → PostgreSQL
+   - Name: `portafolio-db`
+
+2. **Crear Web Service**
+   - New + → Web Service
+   - Root Directory: `backend`
+   - Build: `npm install`
+   - Start: `npm start`
+
+3. **Configurar Variables**
+   - Conecta las variables de la base de datos
 
 ---
 
@@ -104,34 +151,15 @@ El servidor inicia en: **http://localhost:3000**
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | GET | `/` | Frontend (HTML) |
+| GET | `/health` | Health check |
 | GET | `/api/profile` | Información del perfil |
 | GET | `/api/experiencia` | Experiencia laboral |
 | GET | `/api/educacion` | Formación académica |
 | GET | `/api/habilidades` | Habilidades técnicas |
 | GET | `/api/proyectos` | Proyectos realizados |
+| GET | `/api/certificaciones` | Certificaciones |
+| GET | `/api/idiomas` | Idiomas |
 | POST | `/api/contacto` | Enviar mensaje |
-
----
-
-## 📝 Scripts Disponibles
-
-### Backend (`cd backend`)
-```powershell
-npm start       # Iniciar servidor en producción
-npm run dev     # Iniciar con nodemon (auto-reload)
-```
-
----
-
-## 🎨 Características
-
-- ✅ **Arquitectura separada** - Frontend y Backend independientes
-- ✅ **API REST** - Endpoints bien estructurados
-- ✅ **Base de datos** - PostgreSQL con datos dinámicos
-- ✅ **Variables de entorno** - Configuración segura con .env
-- ✅ **JavaScript Vanilla** - Sin frameworks, rápido y ligero
-- ✅ **Responsive** - Adaptable a todos los dispositivos
-- ✅ **Modular** - Fácil de mantener y extender
 
 ---
 
@@ -141,16 +169,13 @@ npm run dev     # Iniciar con nodemon (auto-reload)
 PostgreSQL → Backend API → Frontend JavaScript → DOM
 ```
 
-1. PostgreSQL almacena los datos
-2. Backend expone API REST en `/api/*`
-3. Frontend hace `fetch()` a la API
-4. JavaScript actualiza el DOM dinámicamente
+El backend sirve el frontend automáticamente. Todo en una sola URL.
 
 ---
 
 ## 📊 Actualizar Contenido
 
-No necesitas editar el HTML. Actualiza directamente en PostgreSQL:
+Modifica directamente en PostgreSQL:
 
 ```sql
 -- Actualizar perfil
@@ -159,44 +184,30 @@ UPDATE profile SET descripcion = 'Nueva descripción' WHERE id = 1;
 -- Agregar experiencia
 INSERT INTO experiencia (empresa, cargo, fecha_inicio, descripcion) 
 VALUES ('Nueva Empresa', 'Senior Developer', '2024-01-01', 'Descripción...');
-
--- Agregar habilidad
-INSERT INTO habilidades (nombre, nivel, categoria) 
-VALUES ('React', 85, 'Frontend');
 ```
 
-Recarga la página y los cambios aparecen automáticamente.
+Recarga la página → cambios automáticos.
 
 ---
 
-## 🐛 Solución de Problemas
+## 🐛 Troubleshooting
 
-### Error: "Cannot find module"
+### En Render:
+- Verifica logs en Dashboard
+- Asegúrate de que la BD esté conectada
+- Revisa las variables de entorno
+
+### Localmente:
 ```powershell
-cd backend
-npm install
+# Error "Cannot find module"
+cd backend && npm install
+
+# Error "Port already in use"
+# Cambia PORT en .env
+
+# Error PostgreSQL
+# Verifica credenciales en .env
 ```
-
-### Error: "Port 3000 already in use"
-Cambia el puerto en `.env`:
-```env
-PORT=3001
-```
-
-### Error de conexión a PostgreSQL
-Verifica credenciales en `.env` y que PostgreSQL esté corriendo
-
----
-
-## 📦 Deploy
-
-### Backend
-- **Render**: https://render.com
-- **Railway**: https://railway.app
-- **Heroku**: https://heroku.com
-
-### Frontend
-El frontend se sirve automáticamente desde el backend. No requiere deploy separado.
 
 ---
 
