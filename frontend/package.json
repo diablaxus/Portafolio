@@ -1,0 +1,22 @@
+{
+  "name": "portafolio-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para portafolio personal - HTML, CSS, JavaScript",
+  "scripts": {
+    "serve": "npx http-server -p 8080 -o",
+    "dev": "npx live-server --port=8080 --open=index.html"
+  },
+  "keywords": [
+    "portfolio",
+    "frontend",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "Frank Esteban Berrío Forero <frankbf2003@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  }
+}
