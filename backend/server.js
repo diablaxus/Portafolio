@@ -1,62 +1,40 @@
-require('dotenv').config({ path: __dirname + '/.env' });
+require('dotenv').config(); // cargar variables de entorno
 const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const apiRoutes = require('./routes/api');
-const pool = require('./config/database');
+const pool = require('./database'); // importamos nuestro pool de conexiones
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(express.json()); // parsear JSON en requests
 
-// CORS - Permitir todos los orígenes en producción
-app.use(cors());
+const PORT = process.env.PORT || 10000;
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ============================
+// Rutas de prueba
+// ============================
 
-// Servir archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// API Routes
-app.use('/api', apiRoutes);
-
-// Ruta principal - Servir index.html
+// Ruta raíz
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
+    res.send('🌐 Servidor corriendo correctamente');
 });
 
-// Health check para Render
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
+// Ruta de prueba con base de datos
+app.get('/api/usuarios', async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM usuarios LIMIT 10;');
+        res.json(rows);
+    } catch (err) {
+        console.error('❌ Error al consultar usuarios:', err.message);
+        res.status(500).json({ error: 'Error al consultar usuarios' });
+    }
 });
 
-// Verificar conexión a la base de datos
-pool.query('SELECT NOW()')
-    .then(() => {
-        console.log('✅ Conectado a la base de datos PostgreSQL');
-        console.log(`📊 Base de datos: ${process.env.DB_NAME}`);
-    })
-    .catch(err => console.error('❌ Error conectando a PostgreSQL:', err));
-
+// ============================
 // Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`
-==================================================
-🚀 SERVIDOR INICIADO CORRECTAMENTE
-==================================================
-📄 Frontend: http://localhost:${PORT}
-🔌 API: http://localhost:${PORT}/api
-📁 Archivos estáticos: ../frontend
-🌍 Entorno: ${process.env.NODE_ENV || 'development'}
-==================================================
-    `);
-});
-
-// Manejo de cierre limpio
-process.on('SIGTERM', () => {
-    console.log('👋 SIGTERM recibido. Cerrando servidor...');
-    pool.end(() => {
-        console.log('💾 Pool de PostgreSQL cerrado');
-        process.exit(0);
-    });
+// ============================
+app.listen(PORT, () => {
+    console.log('==================================================');
+    console.log('🚀 SERVIDOR INICIADO CORRECTAMENTE');
+    console.log(`📄 Frontend: http://localhost:${PORT}`);
+    console.log(`🔌 API: http://localhost:${PORT}/api`);
+    console.log(`🌍 Entorno: ${process.env.NODE_ENV}`);
+    console.log('==================================================');
 });
