@@ -1,14 +1,21 @@
-const express = require('express');
+import express from "express";
+import { supabase } from "../config/database.js";
+
 const router = express.Router();
-const pool = require('../config/database');
 
 // ==================== ENDPOINTS API ====================
 
 // Obtener información del perfil
 router.get('/profile', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM profile LIMIT 1');
-        res.json(result.rows[0] || {});
+        const { data, error } = await supabase
+            .from('profile')
+            .select('*')
+            .limit(1)
+            .single();
+        
+        if (error) throw error;
+        res.json(data || {});
     } catch (err) {
         console.error('Error en /profile:', err);
         res.status(500).json({ error: err.message });
@@ -18,8 +25,13 @@ router.get('/profile', async (req, res) => {
 // Obtener experiencia laboral
 router.get('/experiencia', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM experiencia ORDER BY fecha_inicio DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('experiencia')
+            .select('*')
+            .order('fecha_inicio', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /experiencia:', err);
         res.status(500).json({ error: err.message });
@@ -29,8 +41,13 @@ router.get('/experiencia', async (req, res) => {
 // Obtener educación
 router.get('/educacion', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM educacion ORDER BY fecha_inicio DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('educacion')
+            .select('*')
+            .order('fecha_inicio', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /educacion:', err);
         res.status(500).json({ error: err.message });
@@ -40,8 +57,13 @@ router.get('/educacion', async (req, res) => {
 // Obtener habilidades
 router.get('/habilidades', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM habilidades ORDER BY nivel DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('habilidades')
+            .select('*')
+            .order('nivel', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /habilidades:', err);
         res.status(500).json({ error: err.message });
@@ -51,8 +73,14 @@ router.get('/habilidades', async (req, res) => {
 // Obtener proyectos
 router.get('/proyectos', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM proyectos ORDER BY orden ASC, fecha_inicio DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('proyectos')
+            .select('*')
+            .order('orden', { ascending: true })
+            .order('fecha_inicio', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /proyectos:', err);
         res.status(500).json({ error: err.message });
@@ -62,8 +90,14 @@ router.get('/proyectos', async (req, res) => {
 // Obtener certificaciones
 router.get('/certificaciones', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM certificaciones ORDER BY orden ASC, fecha_obtencion DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('certificaciones')
+            .select('*')
+            .order('orden', { ascending: true })
+            .order('fecha_obtencion', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /certificaciones:', err);
         res.status(500).json({ error: err.message });
@@ -73,8 +107,14 @@ router.get('/certificaciones', async (req, res) => {
 // Obtener idiomas
 router.get('/idiomas', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM idiomas ORDER BY orden ASC, porcentaje DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('idiomas')
+            .select('*')
+            .order('orden', { ascending: true })
+            .order('porcentaje', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /idiomas:', err);
         res.status(500).json({ error: err.message });
@@ -90,12 +130,16 @@ router.post('/contacto', async (req, res) => {
     }
 
     try {
-        const query = 'INSERT INTO contactos (nombre, email, mensaje) VALUES ($1, $2, $3) RETURNING id';
-        const result = await pool.query(query, [nombre, email, mensaje]);
+        const { data, error } = await supabase
+            .from('contactos')
+            .insert([{ nombre, email, mensaje }])
+            .select();
+        
+        if (error) throw error;
         res.json({ 
             success: true, 
             message: 'Mensaje guardado exitosamente',
-            id: result.rows[0].id 
+            id: data[0].id 
         });
     } catch (err) {
         console.error('Error en /contacto:', err);
@@ -106,8 +150,13 @@ router.post('/contacto', async (req, res) => {
 // Obtener todos los mensajes de contacto (admin)
 router.get('/contactos', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM contactos ORDER BY fecha DESC');
-        res.json(result.rows);
+        const { data, error } = await supabase
+            .from('contactos')
+            .select('*')
+            .order('fecha', { ascending: false });
+        
+        if (error) throw error;
+        res.json(data);
     } catch (err) {
         console.error('Error en /contactos:', err);
         res.status(500).json({ error: err.message });
@@ -120,8 +169,12 @@ router.put('/profile/:id', async (req, res) => {
     const { nombre, email, telefono, descripcion, foto_url } = req.body;
     
     try {
-        const query = 'UPDATE profile SET nombre=$1, email=$2, telefono=$3, descripcion=$4, foto_url=$5 WHERE id=$6';
-        await pool.query(query, [nombre, email, telefono, descripcion, foto_url, id]);
+        const { error } = await supabase
+            .from('profile')
+            .update({ nombre, email, telefono, descripcion, foto_url })
+            .eq('id', id);
+        
+        if (error) throw error;
         res.json({ success: true, message: 'Perfil actualizado' });
     } catch (err) {
         console.error('Error en PUT /profile:', err);
@@ -134,9 +187,13 @@ router.post('/experiencia', async (req, res) => {
     const { empresa, cargo, fecha_inicio, fecha_fin, descripcion } = req.body;
     
     try {
-        const query = 'INSERT INTO experiencia (empresa, cargo, fecha_inicio, fecha_fin, descripcion) VALUES ($1, $2, $3, $4, $5) RETURNING id';
-        const result = await pool.query(query, [empresa, cargo, fecha_inicio, fecha_fin, descripcion]);
-        res.json({ success: true, id: result.rows[0].id });
+        const { data, error } = await supabase
+            .from('experiencia')
+            .insert([{ empresa, cargo, fecha_inicio, fecha_fin, descripcion }])
+            .select();
+        
+        if (error) throw error;
+        res.json({ success: true, id: data[0].id });
     } catch (err) {
         console.error('Error en POST /experiencia:', err);
         res.status(500).json({ error: err.message });
@@ -148,13 +205,17 @@ router.post('/habilidades', async (req, res) => {
     const { nombre, nivel } = req.body;
     
     try {
-        const query = 'INSERT INTO habilidades (nombre, nivel) VALUES ($1, $2) RETURNING id';
-        const result = await pool.query(query, [nombre, nivel]);
-        res.json({ success: true, id: result.rows[0].id });
+        const { data, error } = await supabase
+            .from('habilidades')
+            .insert([{ nombre, nivel }])
+            .select();
+        
+        if (error) throw error;
+        res.json({ success: true, id: data[0].id });
     } catch (err) {
         console.error('Error en POST /habilidades:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-module.exports = router;
+export default router;

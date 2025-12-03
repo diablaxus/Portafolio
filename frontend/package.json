@@ -1,22 +1,27 @@
 {
-  "name": "portafolio-frontend",
-  "version": "1.0.0",
-  "description": "Frontend para portafolio personal - HTML, CSS, JavaScript",
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "serve": "npx http-server -p 8080 -o",
-    "dev": "npx live-server --port=8080 --open=index.html"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
-  "keywords": [
-    "portfolio",
-    "frontend",
-    "html",
-    "css",
-    "javascript"
-  ],
-  "author": "Frank Esteban Berrío Forero <frankbf2003@gmail.com>",
-  "license": "MIT",
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
   "devDependencies": {
-    "http-server": "^14.1.1",
-    "live-server": "^1.2.2"
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "vite": "^7.2.4"
   }
 }
