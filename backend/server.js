@@ -1,6 +1,6 @@
 require('dotenv').config(); // cargar variables de entorno
 const express = require('express');
-const pool = require('./database'); // importamos nuestro pool de conexiones
+const pool = require('./config/database'); // importamos nuestro pool de conexiones
 
 const app = express();
 app.use(express.json()); // parsear JSON en requests
