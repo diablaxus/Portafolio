@@ -1,6 +1,5 @@
-// database.js
-require('dotenv').config();
 const { Pool } = require('pg');
+require('dotenv').config();
 
 if (!process.env.DATABASE_URL) {
     console.error("❌ ERROR: Falta la variable DATABASE_URL en Render o en tu .env");
@@ -8,24 +7,21 @@ if (!process.env.DATABASE_URL) {
 }
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false // obligatorio para Supabase desde Render
-    },
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  // Esta opción fuerza usar solo IPv4
+  host: process.env.DATABASE_URL.split('@')[1].split(':')[0],
 });
 
-// Probar la conexión sin bloquear el servidor
 pool.connect()
-    .then(client => {
-        console.log('✅ Conectado correctamente a Supabase');
-        client.release();
-    })
-    .catch(err => {
-        console.error('❌ Error conectando a la base de datos:', err.message);
-        // No hacemos process.exit, solo mostramos el error
-    });
+  .then(client => {
+    console.log('✅ Conectado correctamente a Supabase (IPv4 forzado)');
+    client.release();
+  })
+  .catch(err => {
+    console.error('❌ Error conectando a la base de datos:', err.message);
+  });
 
 module.exports = pool;
