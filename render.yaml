@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: portafolio-frank-berrio
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        value: https://dwqsatksemonzjewfplh.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
