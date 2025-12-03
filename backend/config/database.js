@@ -2,12 +2,19 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 // Configuración de la conexión a PostgreSQL
-// PRIORIZA variables individuales (Render/Local) sobre DATABASE_URL (Supabase)
-const useIndividualVars = process.env.DB_HOST || process.env.DB_USER || process.env.DB_NAME;
-
-const config = useIndividualVars
+// Funciona con DATABASE_URL (Supabase/Render) o variables individuales (Local)
+const config = process.env.DATABASE_URL 
     ? {
-        // RENDER o LOCAL: Usa variables individuales
+        // PRODUCCIÓN: Supabase con DATABASE_URL
+        connectionString: process.env.DATABASE_URL,
+        ssl: { 
+            rejectUnauthorized: false 
+        },
+        // Configuración para evitar problemas con IPv6
+        connectionTimeoutMillis: 10000,
+    }
+    : {
+        // DESARROLLO LOCAL: Variables individuales
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT || 5432,
         user: process.env.DB_USER || 'postgres',
@@ -16,26 +23,27 @@ const config = useIndividualVars
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
-    }
-    : {
-        // SUPABASE: Usa DATABASE_URL
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
     };
 
 const pool = new Pool(config);
 
-// Probar conexión
+// Probar conexión al iniciar
 pool.connect()
-    .then(() => {
-        const env = useIndividualVars ? 'Variables Individuales (Render/Local)' : 'DATABASE_URL (Supabase)';
-        const dbName = process.env.DB_NAME || 'postgres';
-        console.log(`✅ Conectado a PostgreSQL usando: ${env}`);
-        console.log(`📊 Base de datos: ${dbName}`);
+    .then((client) => {
+        const env = process.env.DATABASE_URL ? 'Supabase' : 'Local PostgreSQL';
+        console.log(`✅ Conectado a ${env}`);
+        console.log(`📊 Base de datos configurada correctamente`);
+        client.release();
     })
     .catch(err => {
         console.error('❌ Error conectando a la base de datos:', err.message);
-        console.error('💡 Verifica las credenciales en Render Dashboard o en .env');
+        console.error('💡 Verifica las credenciales de Supabase o PostgreSQL local');
+        // No forzar exit para que Render pueda mostrar logs
     });
+
+// Manejo de errores del pool
+pool.on('error', (err) => {
+    console.error('❌ Error inesperado en el pool de conexiones:', err.message);
+});
 
 module.exports = pool;

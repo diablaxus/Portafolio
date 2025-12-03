@@ -12,29 +12,7 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: DB_HOST
-        fromDatabase:
-          name: portafolio-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: portafolio-db
-          property: port
-      - key: DB_USER
-        fromDatabase:
-          name: portafolio-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: portafolio-db
-          property: password
-      - key: DB_NAME
-        fromDatabase:
-          name: portafolio-db
-          property: database
-
-databases:
-  - name: portafolio-db
-    databaseName: portafolio_db
-    plan: free
-    ipAllowList: []
+      - key: DATABASE_URL
+        sync: false
+        # Esta variable debe configurarse manualmente en Render Dashboard
+        # postgresql://postgres:solomayoresde18@db.dwqsatksemonzjewfplh.supabase.co:5432/postgres
